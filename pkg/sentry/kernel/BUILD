@@ -138,6 +138,7 @@ go_library(
     imports = [
         "gvisor.googlesource.com/gvisor/pkg/bpf",
         "gvisor.googlesource.com/gvisor/pkg/sentry/device",
+        "gvisor.googlesource.com/gvisor/pkg/sentry/kernel/auth",
         "gvisor.googlesource.com/gvisor/pkg/tcpip",
     ],
     visibility = ["//:sandbox"],

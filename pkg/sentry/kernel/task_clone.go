@@ -424,6 +424,7 @@ func (t *Task) Unshare(opts *SharingOptions) error {
 	if opts.NewAddressSpace || opts.NewSignalHandlers {
 		return syserror.EINVAL
 	}
+	creds := t.Credentials()
 	if opts.NewThreadGroup {
 		t.tg.signalHandlers.mu.Lock()
 		if t.tg.tasksCount != 1 {
@@ -439,7 +440,6 @@ func (t *Task) Unshare(opts *SharingOptions) error {
 			return syserror.EPERM
 		}
 		// This temporary is needed because Go.
-		creds := t.Credentials()
 		newUserNS, err := creds.NewChildUserNamespace()
 		if err != nil {
 			return err
@@ -448,6 +448,7 @@ func (t *Task) Unshare(opts *SharingOptions) error {
 		if err != nil {
 			return err
 		}
+		creds = t.Credentials()
 	}
 	haveCapSysAdmin := t.HasCapability(linux.CAP_SYS_ADMIN)
 	if opts.NewPIDNamespace {
@@ -472,7 +473,7 @@ func (t *Task) Unshare(opts *SharingOptions) error {
 		}
 		// Note that this must happen after NewUserNamespace, so the
 		// new user namespace is used if there is one.
-		t.utsns = t.utsns.Clone(t.creds.UserNamespace)
+		t.utsns = t.utsns.Clone(creds.UserNamespace)
 	}
 	if opts.NewIPCNamespace {
 		if !haveCapSysAdmin {
@@ -481,7 +482,7 @@ func (t *Task) Unshare(opts *SharingOptions) error {
 		}
 		// Note that "If CLONE_NEWIPC is set, then create the process in a new IPC
 		// namespace"
-		t.ipcns = NewIPCNamespace(t.creds.UserNamespace)
+		t.ipcns = NewIPCNamespace(creds.UserNamespace)
 	}
 	var oldfds *FDMap
 	if opts.NewFiles {
