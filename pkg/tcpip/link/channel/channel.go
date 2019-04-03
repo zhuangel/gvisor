@@ -98,7 +98,7 @@ func (e *Endpoint) MTU() uint32 {
 func (e *Endpoint) Capabilities() stack.LinkEndpointCapabilities {
 	caps := stack.LinkEndpointCapabilities(0)
 	if e.GSO {
-		caps |= stack.CapabilityGSO
+		caps |= stack.CapabilityHWGSO
 	}
 	return caps
 }

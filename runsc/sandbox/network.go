@@ -248,6 +248,10 @@ func createInterfacesAndRoutesFromNS(conn *urpc.Client, nsPath string, enableGSO
 			}
 			args.FilePayload.Files = append(args.FilePayload.Files, socketEntry.deviceFile)
 		}
+		if link.GSOMaxSize == 0 {
+			link.GSOMaxSize = 1 << 16
+			link.SWGSO = true
+		}
 
 		// Collect the addresses for the interface, enable forwarding,
 		// and remove them from the host.
