@@ -359,6 +359,11 @@ func (cm *containerManager) Restore(o *RestoreOpts, _ *struct{}) error {
 		return fmt.Errorf("file cannot be empty")
 	}
 
+	// Seccomp filters have to be applied before parsing the state file.
+	if err := cm.l.installSeccompFilters(); err != nil {
+		return err
+	}
+
 	// Load the state.
 	loadOpts := state.LoadOpts{Source: specFile}
 	if err := loadOpts.Load(k, networkStack); err != nil {
