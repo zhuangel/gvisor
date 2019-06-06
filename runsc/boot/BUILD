@@ -17,6 +17,7 @@ go_library(
         "loader.go",
         "network.go",
         "strace.go",
+        "user.go",
     ],
     importpath = "gvisor.googlesource.com/gvisor/runsc/boot",
     visibility = [
@@ -68,6 +69,7 @@ go_library(
         "//pkg/sentry/time",
         "//pkg/sentry/unimpl:unimplemented_syscall_go_proto",
         "//pkg/sentry/usage",
+        "//pkg/sentry/usermem",
         "//pkg/sentry/watchdog",
         "//pkg/syserror",
         "//pkg/tcpip",
@@ -95,6 +97,7 @@ go_test(
     srcs = [
         "compat_test.go",
         "loader_test.go",
+        "user_test.go",
     ],
     embed = [":boot"],
     deps = [
