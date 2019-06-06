@@ -1005,3 +1005,89 @@ func TestTTL(t *testing.T) {
 		})
 	}
 }
+
+func TestMulticastInterfaceOption(t *testing.T) {
+	for _, name := range []string{"v4", "v6", "dual"} {
+		t.Run(name, func(t *testing.T) {
+			var networkProtocolNumber tcpip.NetworkProtocolNumber
+			switch name {
+			case "v4":
+				networkProtocolNumber = ipv4.ProtocolNumber
+			case "v6", "dual":
+				networkProtocolNumber = ipv6.ProtocolNumber
+			default:
+				t.Fatal("unknown test variant")
+			}
+
+			var variants []string
+			switch name {
+			case "v4":
+				variants = []string{"v4"}
+			case "v6":
+				variants = []string{"v6"}
+			case "dual":
+				variants = []string{"v6", "mapped"}
+			}
+
+			for _, variant := range variants {
+				t.Run(variant, func(t *testing.T) {
+					for _, doConnect := range []string{"Do-Connect", "Dont-Connect"} {
+						t.Run(doConnect, func(t *testing.T) {
+							for _, optTyp := range []string{"use-addr", "use-nicid"} {
+								t.Run(optTyp, func(t *testing.T) {
+									var mcastAddr, localIfAddr tcpip.Address
+									switch variant {
+									case "v4":
+										mcastAddr = multicastAddr
+										localIfAddr = stackAddr
+									case "mapped":
+										mcastAddr = multicastV4MappedAddr
+										localIfAddr = stackAddr
+									case "v6":
+										mcastAddr = multicastV6Addr
+										localIfAddr = stackV6Addr
+									default:
+										t.Fatal("unknown test variant")
+									}
+
+									var ifopt tcpip.MulticastInterfaceOption
+									switch optTyp {
+									case "use-addr":
+										ifopt.InterfaceAddr = localIfAddr
+									case "use-nicid":
+										ifopt.NIC = 1
+									default:
+										t.Fatal("unknown test variant")
+									}
+
+									c := newDualTestContext(t, defaultMTU)
+									defer c.cleanup()
+
+									var err *tcpip.Error
+									c.ep, err = c.s.NewEndpoint(udp.ProtocolNumber, networkProtocolNumber, &c.wq)
+									if err != nil {
+										c.t.Fatalf("NewEndpoint failed: %v", err)
+									}
+
+									if doConnect == "Do-Connect" {
+										addr := tcpip.FullAddress{
+											Addr: mcastAddr,
+											Port: multicastPort,
+										}
+										if err := c.ep.Connect(addr); err != nil {
+											c.t.Fatalf("Connect failed: %v", err)
+										}
+									}
+
+									if err := c.ep.SetSockOpt(ifopt); err != nil {
+										c.t.Fatalf("SetSockOpt failed: %v", err)
+									}
+								})
+							}
+						})
+					}
+				})
+			}
+		})
+	}
+}

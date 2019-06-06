@@ -402,13 +402,8 @@ func (e *endpoint) SetSockOpt(opt interface{}) *tcpip.Error {
 		e.mu.Lock()
 		defer e.mu.Unlock()
 
-		fa := tcpip.FullAddress{Addr: v.InterfaceAddr}
-		netProto, err := e.checkV4Mapped(&fa, false)
-		if err != nil {
-			return err
-		}
 		nic := v.NIC
-		addr := fa.Addr
+		addr := v.InterfaceAddr
 
 		if nic == 0 && addr == "" {
 			e.multicastAddr = ""
@@ -421,6 +416,12 @@ func (e *endpoint) SetSockOpt(opt interface{}) *tcpip.Error {
 				return tcpip.ErrBadLocalAddress
 			}
 		} else {
+			fa := tcpip.FullAddress{Addr: v.InterfaceAddr}
+			netProto, err := e.checkV4Mapped(&fa, false)
+			if err != nil {
+				return err
+			}
+			addr = fa.Addr
 			nic = e.stack.CheckLocalAddress(0, netProto, addr)
 			if nic == 0 {
 				return tcpip.ErrBadLocalAddress
