@@ -9,7 +9,7 @@ go_library(
         "namespace.go",
         "specutils.go",
     ],
-    importpath = "gvisor.googlesource.com/gvisor/runsc/specutils",
+    importpath = "gvisor.dev/gvisor/runsc/specutils",
     visibility = [
         "//runsc:__subpackages__",
         "//test:__subpackages__",
